@@ -24,6 +24,14 @@ HEADERS = {
     "Referer": "https://www.ktu.edu.in/"
 }
 
+@app.route('/')
+def home():
+    return jsonify({"status": "success", "message": "KTU Announcements API is running!"})
+
+@app.route('/favicon.ico')
+def favicon():
+    return "", 204  # Avoid 404 for favicon requests
+
 @app.route('/ktu-announcements', methods=['GET'])
 def get_ktu_announcements():
     try:
@@ -40,7 +48,10 @@ def get_ktu_announcements():
                     clean_description = BeautifulSoup(raw_description, "html.parser").get_text() if raw_description else "No description available."
 
                     # Check if PDF attachments exist
-                    has_pdf = any(attachment.get("attachmentName", "").endswith(".pdf") for attachment in item.get("attachmentList", []))
+                    has_pdf = any(
+                        attachment.get("attachmentName", "").endswith(".pdf")
+                        for attachment in item.get("attachmentList", [])
+                    )
 
                     notification = {
                         "date": item.get("announcementDate", "Unknown Date"),
@@ -55,14 +66,14 @@ def get_ktu_announcements():
                     "total": len(notifications),
                     "notifications": notifications
                 }), 200
-            else:
-                return jsonify({"status": "error", "message": "No content found"}), 404
+
+            return jsonify({"status": "error", "message": "No content found"}), 404
 
         return jsonify({"status": "error", "message": "Failed to fetch data", "code": response.status_code}), response.status_code
 
     except requests.exceptions.RequestException as e:
         return jsonify({"status": "error", "message": str(e)}), 500
 
-
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
+    app.run(host='0.0.0.0', port=10000)
+
